@@ -2,13 +2,10 @@
 //   Example scripts for you to examine and try out.
 //
 // Commands:
-//   hubot galaxy restart - restarts the Freiburg Galaxy server
-//   hubot galaxy message set  ... - sets a notice on the galaxy server
-//   hubot galaxy message hide - hides the message on next restart.
-//   hubot galaxy status - checks the status of the server
-//   cancel restart - Cancels any running restart.
+//   hubot galaxy cancel restart - Cancels any running restart.
 //   proverbe - Display a random proverb
 //   chat <number> - Display a cat http problem
+//   video <request> - Search on youtube your request
 // Notes:
 //   They are commented out by default, because most of them are pretty silly and
 //   wouldn't be useful and amusing enough for day to day huboting.
@@ -22,19 +19,18 @@ var BOTNAME = '[**Majordome**]: ';
 var execSync = require('child_process').execSync;
 var serverRestart = null;
 var permissions = {
-	restart: ['bgruening', 'erasche','ValentinChCloud','ValentinCh']
+	restart: ['bgruening', 'erasche','ValentinChCloud','ValentinCh','ylebras','alanamosse']
 }
 var serverRestartTimer;
 
 module.exports = function(robot) {
-
 	robot.respond(/galaxy restart/i, function(res) {
 		// The user issuing the request
 		requestingUser = res.message.user.username;
 		// Must be in the set of people who are permitted to restart the serve.r
 		if(permissions.restart.indexOf(requestingUser) > -1){
 			// If they are, send a message indicating the scheduling of the reboot
-			res.send(BOTNAME + res.message.user.displayName + ' (@' + res.message.user.username + ") requested a restart of the galaxy server. You have **5 minutes**. Just say '**cancel restart**' and I'll stop.");
+			res.send(BOTNAME + res.message.user.displayName + ' (@' + res.message.user.username + ") requested a restart of the galaxy server. You have **10 secondes**. Just say '**cancel restart**' and I'll stop.");
 			// And build a serverRestart information object.
 			serverRestart = {
 				owner: res.message.user.username,
@@ -50,8 +46,6 @@ var child;
 
 child = exec('sh $GALAXY_ROOT/run.sh --restart',
    function (error, stdout, stderr) {
-      res.send(stdout);
-      console.log('stderr: ' + stderr);
       if (error !== null) {
           console.log('exec error: ' + error);
       }
@@ -63,7 +57,7 @@ child = exec('sh $GALAXY_ROOT/run.sh --restart',
 					res.send(BOTNAME + "*coughs* hey @erasche, might be a bug here.");
 				}
 			// ms   * minute * 5
-			}, 1000 * 60 * 5);
+			}, 1000 * 10);
 
 		}
 	});
@@ -133,7 +127,7 @@ robot.hear(/je peux avoir un cookie?/i, function(res) {
 
 });
 
-robot.hear(/chat (.*)/i, function(res) {
+robot.hear(/chat ([0-9]+)$/i, function(res) {
 //var arr =["100","101","200","201","202","204","206","207","300","301","303","304","305","307","400","401","402","403","404","405","406","408","409","410","411","413","414","416","417","418","422","423","424","425","426","429","431","444","450","500","502","503","506","507","508","509","599"]
 //var item = arr[Math.floor(Math.random()*arr.length)];
 var number= res.match[1]
@@ -142,9 +136,23 @@ res.send('https://http.cat/'+number);
 //res.send(res.message);
 });
 
+robot.hear(/http erreur ([0-9]+)/i, function(res) {
+//var arr =["100","101","200","201","202","204","206","207","300","301","303","304","305","307","400","401","402","403","404","405","406","408","409","410","411","413","414","416","417","418","422","423","424","425","426","429","431","444","450","500","502","503","506","507","508","509","599"]
+//var item = arr[Math.floor(Math.random()*arr.length)];
+var number= res.match[1]
+res.send('https://http.cat/'+number);
+
+//res.send(res.message);
+});
+
+robot.respond(/video (.*)/i, function(res) {
+var request= String(res.match[1])
+var requests= request.replace(/ /gm,"+")
+res.send('https://www.youtube.com/results?search_query='+String(requests));
+});
 	robot.respond(/galaxy status/i, function(res) {
  var request = require('request');
-request('http://192.168.100.44:8080', function (error, response, body) {
+request('http://192.168.100.25:8080', function (error, response, body) {
   if (!error && response.statusCode == 200) {
    // console.log(body) // Show the HTML for the Google homepage. 
     res.send('Server is running'); 
